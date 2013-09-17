@@ -6,7 +6,7 @@ Requires the usual Python packages:
 
 matplotlib
 scipy
-skimage
+scikit-image
 numpy
 
 
