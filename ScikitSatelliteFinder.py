@@ -6,11 +6,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.ndimage as I
 import math as M
+import os.path
 
-def harness_wrapper(fname):
-  im = I.imread(fname)
-  return is_it_a_trail(im,thresh=50)
-  
+def measurement_wrapper(fname, ident, outfile):
+    try:
+        im = I.imread(fname)
+    except:
+        print fname+" could not be processed."
+        return
+
+    compute_image_properties(im, ident, outfile, thresh=50)
+    
+# TODO: this has to be part of the imaging tools that I'm using...
 def rgb2gray(img_array):
   assert(img_array.shape[2] == 3)
   img_gray_array = np.zeros((img_array.shape[0], img_array.shape[1]), dtype=np.float32)
@@ -33,7 +40,7 @@ def kl(p, q):
 def intercalate(l):
     return ",".join(map(str,l))
 
-def compute_image_properties(im, thresh=145, bins=51, identifier, outputfile):
+def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
     """Compute properties of an image for later clustering and analysis
 
     Parameters
@@ -56,7 +63,7 @@ def compute_image_properties(im, thresh=145, bins=51, identifier, outputfile):
     # ghist
     # bhist
     # (repeat previous four on each hough line)
-    f = openfile(outputfile,'w')
+    f = open(outputfile,'w')
 
     f.write(identifier+"\n")
 
