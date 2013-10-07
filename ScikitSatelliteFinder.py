@@ -53,20 +53,6 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
     outputfile
     """
 
-    # file format:
-    #
-    # identifier
-    # largest_kl_dist
-    # num lines
-    # rmean rstd gmean gstd bmean bstd
-    # rhist
-    # ghist
-    # bhist
-    # (repeat previous four on each hough line)
-    f = open(outputfile,'w')
-
-    f.write(identifier+"\n")
-
     # convert image into single gray channel for Hough transform
     gim = rgb2gray(im)
     max_val = np.amax(im)
@@ -113,9 +99,9 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
         bmean = np.mean(blue_pixels)
         bstd = np.std(blue_pixels)
 
-        lines_to_write.append(str(rmean)+" "+str(rstd)+" "+
-                              str(gmean)+" "+str(gstd)+" "+
-                              str(bmean)+" "+str(bstd)+"\n")
+        lines_to_write.append(str(rmean)+","+str(rstd)+","+
+                              str(gmean)+","+str(gstd)+","+
+                              str(bmean)+","+str(bstd)+",")
 
         # distance based on bulk statistics
         tot_diff_std = abs(rstd-gstd)+abs(rstd-bstd)+abs(gstd-bstd)
@@ -129,9 +115,9 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
         ghist,junk = np.histogram(green_pixels, bins=bin_vals)
         bhist,junk = np.histogram(blue_pixels, bins=bin_vals)
         
-        lines_to_write.append(intercalate(rhist)+"\n")
-        lines_to_write.append(intercalate(ghist)+"\n")
-        lines_to_write.append(intercalate(bhist)+"\n")
+        lines_to_write.append(intercalate(rhist)+",")
+        lines_to_write.append(intercalate(ghist)+",")
+        lines_to_write.append(intercalate(bhist))
 
         # compute KL dist between channels.  +1 to avoid div-by-zero and
         # subsequent inf.  this assumes that kl is a symmetric distance
@@ -147,10 +133,27 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
             largest_kl_dist = kl_dist
 
     # write out
-    f.write(str(largest_kl_dist)+"\n")
-    f.write(str(numhits)+"\n")
+    if numhits > 1:
+        return
+
+    # file format:
+    #
+    # identifier
+    # largest_kl_dist
+    # num lines
+    # rmean rstd gmean gstd bmean bstd
+    # rhist
+    # ghist
+    # bhist
+    # (repeat previous four on each hough line)
+    f = open(outputfile,'w')
+
+    f.write(identifier+",")
+    f.write(str(largest_kl_dist)+",")
+    #f.write(str(numhits)+"\n")
     for l in lines_to_write:
         f.write(l)
+    f.write("\n")
     f.close()
     
 
