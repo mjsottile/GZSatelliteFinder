@@ -4,7 +4,6 @@ import csv
 import ScikitSatelliteFinder as ssf
 import os.path
 
-
 data_root = "/Users/Matt/Data/GZTrailFinder/"
 filename = data_root+"sdss_ids_URLs.csv"
 images_root = data_root+"images/"
