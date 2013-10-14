@@ -4,9 +4,9 @@ import csv
 import urllib
 import os.path
 
-filename = "sdss_ids_URLs.csv"
-
-images_root = "images/"
+data_root = "/Users/Matt/Data/GZTrailFinder/"
+filename = data_root+"sdss_ids_URLs.csv"
+images_root = data_root+"images/"
 
 i = 1
 

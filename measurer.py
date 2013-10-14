@@ -5,7 +5,7 @@ import ScikitSatelliteFinder as ssf
 import os.path
 
 
-data_root = "/Users/Matt/Desktop/from_linux/dotastro/sat/GZSatelliteFinder/"
+data_root = "/Users/Matt/Data/GZTrailFinder/"
 filename = data_root+"sdss_ids_URLs.csv"
 images_root = data_root+"images/"
 measurements_root = "./measurements/"
@@ -15,6 +15,8 @@ i = 0
 with open(filename, 'rb') as csvfile:
     test = csv.reader(csvfile)
     for t in test:
+        if i > 30:
+            break
         ustring = t[2]
         junk1, junk2, imagename = ustring.rpartition("/")
         if os.path.exists(images_root+imagename):
