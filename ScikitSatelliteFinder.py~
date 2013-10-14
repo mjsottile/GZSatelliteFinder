@@ -60,7 +60,7 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
     h, theta, d = hough_line(rgb2gray(im)>thresh)
     rows, cols = gim.shape
     
-    #largest_kl_dist = 0.0
+    largest_kl_dist = 0.0
     numhits = 0
  
     lines_to_write = []
@@ -91,21 +91,7 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
         red_pixels = rchan[ys_mask.astype(int), xs_mask.astype(int)]
         green_pixels = gchan[ys_mask.astype(int), xs_mask.astype(int)]
         blue_pixels = bchan[ys_mask.astype(int), xs_mask.astype(int)]
-
-        # create an interpolator for each channel
-        npix = len(red_pixels)
-
-        # don't bother with tiny lines.  they are weird.  TODO: print when
-        # we see these to see why.
-        if npix < 10:
-            continue
-        num_interp = 100
-
-        x = np.linspace(0,1,npix)
-        y = np.linspace(0,1,num_interp)
-        r_interp = interp1d(x,red_pixels)
-        g_interp = interp1d(x,green_pixels)
-        b_interp = interp1d(x,blue_pixels)
+	print len(red_pixels)
 
         # basic statistics about each channel
         rmean = np.mean(red_pixels)
@@ -118,41 +104,38 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
         lines_to_write.append(str(rmean)+","+str(rstd)+","+
                               str(gmean)+","+str(gstd)+","+
                               str(bmean)+","+str(bstd)+",")
-        lines_to_write.append(intercalate(r_interp(y)) + ",")
-        lines_to_write.append(intercalate(g_interp(y)) + ",")
-        lines_to_write.append(intercalate(b_interp(y)) + "\n")
 
         # distance based on bulk statistics
         tot_diff_std = abs(rstd-gstd)+abs(rstd-bstd)+abs(gstd-bstd)
         tot_diff_mean = abs(rmean-gmean)+abs(rmean-bmean)+abs(gmean-bmean)
         
         # generate bin boundaries for histogramming
-#        bin_vals = np.arange(0,bins+2.0)*(max_val / bins)
+        bin_vals = np.arange(0,bins+2.0)*(max_val / bins)
         
         # compute histograms
-#        rhist,junk = np.histogram(red_pixels, bins=bin_vals)
-#        ghist,junk = np.histogram(green_pixels, bins=bin_vals)
-#        bhist,junk = np.histogram(blue_pixels, bins=bin_vals)
+        rhist,junk = np.histogram(red_pixels, bins=bin_vals)
+        ghist,junk = np.histogram(green_pixels, bins=bin_vals)
+        bhist,junk = np.histogram(blue_pixels, bins=bin_vals)
         
-#        lines_to_write.append(intercalate(rhist)+",")
-#        lines_to_write.append(intercalate(ghist)+",")
-#        lines_to_write.append(intercalate(bhist))
+        lines_to_write.append(intercalate(rhist)+",")
+        lines_to_write.append(intercalate(ghist)+",")
+        lines_to_write.append(intercalate(bhist))
 
         # compute KL dist between channels.  +1 to avoid div-by-zero and
         # subsequent inf.  this assumes that kl is a symmetric distance
         # function
-#        ks = [kl(rhist+1,ghist+1), kl(rhist+1,bhist+1),
-#              kl(ghist+1,bhist+1)]
+        ks = [kl(rhist+1,ghist+1), kl(rhist+1,bhist+1),
+              kl(ghist+1,bhist+1)]
 
         ### TODO: better method for distinguishing differences in histograms
         
         # biggest difference in KL divergence difference
-#        kl_dist = max(ks)-min(ks)
-#        if largest_kl_dist < kl_dist:
-#            largest_kl_dist = kl_dist
+        kl_dist = max(ks)-min(ks)
+        if largest_kl_dist < kl_dist:
+            largest_kl_dist = kl_dist
 
-    # write out when we have 3 or less lines.
-    if numhits>3:
+    # write out
+    if numhits > 1:
         return
 
     # file format:
@@ -167,12 +150,12 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
     # (repeat previous four on each hough line)
     f = open(outputfile,'w')
 
-    #f.write(str(largest_kl_dist)+",")
+    f.write(identifier+",")
+    f.write(str(largest_kl_dist)+",")
     #f.write(str(numhits)+"\n")
     for l in lines_to_write:
-        f.write(identifier+",")
         f.write(l)
-#    f.write("\n")
+    f.write("\n")
     f.close()
     
 
