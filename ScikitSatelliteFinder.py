@@ -3,8 +3,10 @@ from skimage.transform import (hough_line, hough_peaks,
 from skimage.filter import canny
 from skimage import data
 from scipy.interpolate import interp1d
+import pylab
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 import scipy.ndimage as I
 import math as M
 import os.path
@@ -17,7 +19,16 @@ def measurement_wrapper(fname, ident, outfile):
         return
 
     compute_image_properties(im, ident, outfile, thresh=50)
-    
+
+def lineplot_wrapper(fname, outfile):
+    try:
+        im = I.imread(fname)
+    except:
+        print fname+" could not be processed."
+        return
+
+    show_with_lines(outfile, im, thresh=50)
+
 # TODO: this has to be part of the imaging tools that I'm using...
 def rgb2gray(img_array):
   if len(img_array.shape) < 3:
@@ -43,7 +54,7 @@ def kl(p, q):
 def intercalate(l):
     return ",".join(map(str,l))
 
-def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
+def compute_image_properties(im, identifier, outputfile, outimage, thresh=145, bins=51):
     """Compute properties of an image for later clustering and analysis
 
     Parameters
@@ -143,11 +154,11 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
         for l in lines_to_write:
             f.write(identifier+",")
             f.write(l)
-    f.close()
-    
+    f.close()    
 
 def show_with_lines(fname, im, thresh=145):
     gim=rgb2gray(im)
+    matplotlib.pyplot.clf()
     h, theta, d = hough_line(gim>thresh)
     plt.imshow(gim, cmap=plt.cm.gray)
     rows, cols = gim.shape
@@ -157,4 +168,4 @@ def show_with_lines(fname, im, thresh=145):
         plt.plot((0, cols), (y0, y1), '-r')
     plt.axis((0, cols, rows, 0))
     plt.title('Detected lines')
-
+    pylab.savefig(fname,format='png')

@@ -3,11 +3,15 @@
 import csv
 import ScikitSatelliteFinder as ssf
 import os.path
+import matplotlib
 
 data_root = "/Users/Matt/Data/GZTrailFinder/"
 filename = data_root+"sdss_ids_URLs.csv"
 images_root = data_root+"images/"
 measurements_root = "./measurements/"
+lineplots_root = "./lineplots/"
+
+matplotlib.use('Agg')
 
 i = 0
 
@@ -22,4 +26,7 @@ with open(filename, 'rb') as csvfile:
             if not os.path.exists(measurements_root+identifier+".dat"):
                 ssf.measurement_wrapper(images_root+imagename, identifier, \
                                         measurements_root+identifier+".dat")
+            if not os.path.exists(lineplots_root+identifier+".png"):
+                ssf.lineplot_wrapper(images_root+imagename, \
+                                     lineplots_root+identifier+".png")
         i = i + 1
