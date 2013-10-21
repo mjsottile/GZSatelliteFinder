@@ -35,7 +35,8 @@ def rgb2gray(img_array):
     return img_array
   assert(img_array.shape[2] == 3)
   img_gray_array = np.zeros((img_array.shape[0], img_array.shape[1]), dtype=np.float32)
-  img_gray_array = 0.2989*img_array[:,:,0] + 0.5870*img_array[:,:,1] + 0.1140*img_array[:,:,2]
+#  img_gray_array = 0.2989*img_array[:,:,0] + 0.5870*img_array[:,:,1] + 0.1140*img_array[:,:,2]
+  img_gray_array = 0.333*img_array[:,:,0] + 0.333*img_array[:,:,1] + 0.333*img_array[:,:,2]
   return img_gray_array
 
 def kl(p, q):
@@ -54,7 +55,7 @@ def kl(p, q):
 def intercalate(l):
     return ",".join(map(str,l))
 
-def compute_image_properties(im, identifier, outputfile, outimage, thresh=145, bins=51):
+def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
     """Compute properties of an image for later clustering and analysis
 
     Parameters
@@ -158,14 +159,33 @@ def compute_image_properties(im, identifier, outputfile, outimage, thresh=145, b
 
 def show_with_lines(fname, im, thresh=145):
     gim=rgb2gray(im)
+
+    stats = str(np.amax(im)) + " " + str(np.mean(im)) + " " + str(np.std(im))
+
     matplotlib.pyplot.clf()
-    h, theta, d = hough_line(gim>thresh)
-    plt.imshow(gim, cmap=plt.cm.gray)
+
+    fig, (ax1, ax2) = plt.subplots(1,2)
+
+    bw_image = gim > (np.std(im) + np.mean(im))
+    h, theta, d = hough_line(bw_image)
+
+    ax1.imshow(bw_image, cmap=plt.cm.gray)
+    ax2.imshow(im)
+
     rows, cols = gim.shape
+    i = 0
     for _, angle, dist in zip(*hough_peaks(h, theta, d)):
         y0 = (dist - 0 * np.cos(angle)) / np.sin(angle)
         y1 = (dist - cols * np.cos(angle)) / np.sin(angle)
-        plt.plot((0, cols), (y0, y1), '-r')
-    plt.axis((0, cols, rows, 0))
-    plt.title('Detected lines')
+
+        ax1.plot((0, cols), (y0, y1), '-r')
+        ax2.plot((0, cols), (y0, y1), '-r')
+
+        i = i + 1
+
+    ax1.axis((0, cols, rows, 0))
+    ax2.axis((0, cols, rows, 0))
+    ax1.axis('off')
+    ax2.axis('off')
+
     pylab.savefig(fname,format='png')
