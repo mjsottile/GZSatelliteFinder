@@ -6,7 +6,7 @@
 ##
 
 import csv
-import ScikitSatelliteFinder as ssf
+import FeatureExtractor as features
 import os.path
 import config as cfg
 
@@ -28,5 +28,6 @@ with open(params["sdss_database"], 'rb') as csvfile:
             measurement_file = params["measurements_root"]+identifier+".dat"
 
             if not os.path.exists(measurement_file):
-                ssf.line_signature_wrapper(image_file, identifier, measurement_file, params)
+                features.line_signature_wrapper(image_file, identifier, \
+                                                measurement_file, params)
         i = i + 1
