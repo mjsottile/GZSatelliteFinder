@@ -40,8 +40,8 @@ for infile in listing:
         data.extend(dat)
 x = np.array(data)
 
-# debugging : save data in a big file
-np.savetxt('data.dat',x,delimiter=',')
+### debugging : save data in a big file
+# np.savetxt('data.dat',x,delimiter=',')
 
 # get the interp length
 ilen = params["interp_length"]
@@ -58,10 +58,13 @@ fvec = np.empty([len(x),6+(num_comp*3)])
 # for each line, create a compressed feature vector.  THIS IS EXPERIMENTAL
 for i in range(0,len(x)):
     line = x[i,6:]
-    rline = np.sort(abs(np.diff(line[0:ilen])))
-    gline = np.sort(abs(np.diff(line[ilen:(2*ilen)])))
-    bline = np.sort(abs(np.diff(line[(2*ilen):(3*ilen)])))
-    
+#    rline = np.sort(abs(np.diff(line[0:ilen])))
+#    gline = np.sort(abs(np.diff(line[ilen:(2*ilen)])))
+#    bline = np.sort(abs(np.diff(line[(2*ilen):(3*ilen)])))
+    rline = np.sort(line[0:ilen]) 
+    gline = np.sort(line[ilen:(2*ilen)]) 
+    bline = np.sort(line[(2*ilen):(3*ilen)]) 
+
     fvec[i,0:num_comp] = rline[-num_comp:]
     fvec[i,num_comp:(2*num_comp)] = gline[-num_comp:]
     fvec[i,(2*num_comp):(3*num_comp)] = bline[-num_comp:]
@@ -73,12 +76,7 @@ print "Clustering kmeans."
 
 km=cluster.KMeans(n_clusters=15)
 km.fit(fvec)
-km.labels_
-
-print "Clustering af."
-
-af=cluster.AffinityPropagation(damping=0.6).fit(fvec)
-af.labels_
+#km.labels_
 
 print "Dumping."
 
@@ -91,6 +89,13 @@ for i in range(0,max(the_labels)+1):
             f.write("<IMG TEXT=\""+labels[j]+"\" SRC=\"images/"+labels[j]+".jpg\" WIDTH=80>\n")
     f.write("<P>\n")
 f.close()
+
+print "Clustering af."
+
+af=cluster.AffinityPropagation(damping=0.6).fit(fvec)
+#af.labels_
+
+print "Dumping."
 
 the_labels = af.labels_
 f = open("foo_af.html",'w')
