@@ -18,10 +18,15 @@ with open(params["sdss_id_database"], 'rb') as csvfile:
     for t in test:
         ustring = t[2]
         junk1, junk2, imagename = ustring.rpartition("/")
-        if os.path.exists(params["images_root"]+imagename):
+
+        image_file = params["images_root"]+imagename
+
+        if os.path.exists(image_file):
             print str(i)+" :: "+imagename
+
+            measurement_file = params["measurements_root"]+identifier+".dat"
             identifier, junk1, junk2 = imagename.rpartition(".")
-            if not os.path.exists(params["measurements_root"]+identifier+".dat"):
-                ssf.measurement_wrapper(params["images_root"]+imagename, \
-                    identifier, params["measurements_root"]+identifier+".dat")
+
+            if not os.path.exists(measurement_file):
+                ssf.line_signature_wrapper(image_file, identifier, measurement_file, params)
         i = i + 1

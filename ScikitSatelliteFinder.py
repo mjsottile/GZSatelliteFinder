@@ -10,78 +10,34 @@ import matplotlib
 import scipy.ndimage as I
 import math as M
 import os.path
+import segmentation as seg
+import Utilities as U
 
-def measurement_wrapper(fname, ident, outfile):
+def line_signature_wrapper(fname, ident, outfile, params):
     try:
         im = I.imread(fname)
     except:
         print fname+" could not be processed."
         return
 
-    compute_image_properties(im, ident, outfile, thresh=50)
+    compute_line_signatures(im, ident, outfile, params)
 
-def lineplot_wrapper(fname, outfile):
-    try:
-        im = I.imread(fname)
-    except:
-        print fname+" could not be processed."
-        return
-
-    show_with_lines(outfile, im, thresh=50)
-
-# TODO: this has to be part of the imaging tools that I'm using...
-def rgb2gray(img_array):
-  if len(img_array.shape) < 3:
-    return img_array
-  assert(img_array.shape[2] == 3)
-  img_gray_array = np.zeros((img_array.shape[0], img_array.shape[1]), dtype=np.float32)
-#  img_gray_array = 0.2989*img_array[:,:,0] + 0.5870*img_array[:,:,1] + 0.1140*img_array[:,:,2]
-  img_gray_array = (img_array[:,:,0] + img_array[:,:,1] + img_array[:,:,2]) / 3.0
-  return img_gray_array
-
-def kl(p, q):
-    """Kullback-Leibler divergence D(P || Q) for discrete distributions
- 
-    Parameters
-    ----------
-    p, q : array-like, dtype=float, shape=n
-        Discrete probability distributions.
-    """
-    p = np.asarray(p, dtype=np.float)
-    q = np.asarray(q, dtype=np.float)
- 
-    return np.sum(np.where(p != 0, p * np.log(p / q), 0))
-
-def intercalate(l):
-    return ",".join(map(str,l))
-
-def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
-    """Compute properties of an image for later clustering and analysis
-
-    Parameters
-    ----------
-
-    im
-    thresh
-    bins
-    identifier
-    outputfile
-    """
-
+def compute_line_signatures(im, identifier, outputfile, params):
     # for images that aren't color, write an empty file and abort
     if len(im.shape) < 3:
+        print "DEBUG: skipping non-color image "+identifier
+
         f = open(outputfile,'w')
         f.close()
         return
 
     # convert image into single gray channel for Hough transform
-    gim = rgb2gray(im)
-    max_val = np.amax(im)
-    h, theta, d = hough_line(gim>thresh)
+    gim = seg.rgb2gray(im)
+    bin_img = seg.binarize(gim, params)
+    h, theta, d = hough_line(bin_img)
     rows, cols = gim.shape
     
-    numhits = 0
- 
+    numhits = 0 
     lines_to_write = []
 
     # spin through full set of lines that match via the Hough
@@ -89,10 +45,6 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
     # filters it for significant peaks corresponding to strong
     # line signals in the image. 
     for _, angle, dist in zip(*hough_peaks(h, theta, d)):
-        this_line = ""
-
-        numhits = numhits+1
-
         # compute coordinate set for pixels that lie along the line
         xs = np.arange(0,cols-1)
         ys = (dist - xs*np.cos(angle))/np.sin(angle)
@@ -116,14 +68,18 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
         # create an interpolator for each channel
         npix = len(red_pixels)
 
-        # don't bother with tiny lines.  they are weird.  TODO: print when
-        # we see these to see why.
-        if npix < 10:
+        # don't bother with tiny lines.
+        if npix < params["MinLineLength"]:
             continue
-        num_interp = 300
+
+        # clear the line that we are about to write
+        this_line = ""
+
+        # count the line
+        numhits = numhits+1
 
         x = np.linspace(0,1,npix)
-        y = np.linspace(0,1,num_interp)
+        y = np.linspace(0,1,params["InterpLength"])
         r_interp = interp1d(x,red_pixels)
         g_interp = interp1d(x,green_pixels)
         b_interp = interp1d(x,blue_pixels)
@@ -139,53 +95,18 @@ def compute_image_properties(im, identifier, outputfile, thresh=145, bins=51):
         this_line = this_line + (str(rmean)+","+str(rstd)+","+
                                  str(gmean)+","+str(gstd)+","+
                                  str(bmean)+","+str(bstd)+",")
-        this_line = this_line + (intercalate(r_interp(y)) + ",")
-        this_line = this_line + (intercalate(g_interp(y)) + ",")
-        this_line = this_line + (intercalate(b_interp(y)) + "\n")
-
-        # distance based on bulk statistics
-        tot_diff_std = abs(rstd-gstd)+abs(rstd-bstd)+abs(gstd-bstd)
-        tot_diff_mean = abs(rmean-gmean)+abs(rmean-bmean)+abs(gmean-bmean)
+        this_line = this_line + (U.intercalate(r_interp(y)) + ",")
+        this_line = this_line + (U.intercalate(g_interp(y)) + ",")
+        this_line = this_line + (U.intercalate(b_interp(y)) + "\n")
 
         lines_to_write.append(this_line)
         
+    # done computing features.
     f = open(outputfile,'w')
 
-    if numhits < 4:
+    # if we don't have a ton of lines, dump them out
+    if numhits < params["MaxLineCount"]:
         for l in lines_to_write:
             f.write(identifier+",")
             f.write(l)
     f.close()    
-
-def show_with_lines(fname, im, thresh=145):
-    gim=rgb2gray(im)
-
-    stats = str(np.amax(im)) + " " + str(np.mean(im)) + " " + str(np.std(im))
-
-    matplotlib.pyplot.clf()
-
-    fig, (ax1, ax2) = plt.subplots(1,2)
-
-    bw_image = gim > (np.std(im) + np.mean(im))
-    h, theta, d = hough_line(bw_image)
-
-    ax1.imshow(bw_image, cmap=plt.cm.gray)
-    ax2.imshow(im)
-
-    rows, cols = gim.shape
-    i = 0
-    for _, angle, dist in zip(*hough_peaks(h, theta, d)):
-        y0 = (dist - 0 * np.cos(angle)) / np.sin(angle)
-        y1 = (dist - cols * np.cos(angle)) / np.sin(angle)
-
-        ax1.plot((0, cols), (y0, y1), '-r')
-        ax2.plot((0, cols), (y0, y1), '-r')
-
-        i = i + 1
-
-    ax1.axis((0, cols, rows, 0))
-    ax2.axis((0, cols, rows, 0))
-    ax1.axis('off')
-    ax2.axis('off')
-
-    pylab.savefig(fname,format='png')
