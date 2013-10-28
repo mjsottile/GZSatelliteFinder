@@ -33,7 +33,7 @@ def compute_line_signatures(im, identifier, outputfile, params):
 
     # convert image into single gray channel for Hough transform
     gim = seg.rgb2gray(im)
-    bin_img = seg.binarize(gim, params)
+    bin_img = seg.binarize(gim, params["tau"])
     h, theta, d = hough_line(bin_img)
     rows, cols = gim.shape
     
@@ -69,7 +69,7 @@ def compute_line_signatures(im, identifier, outputfile, params):
         npix = len(red_pixels)
 
         # don't bother with tiny lines.
-        if npix < params["MinLineLength"]:
+        if npix < params["min_line_length"]:
             continue
 
         # clear the line that we are about to write
@@ -79,7 +79,7 @@ def compute_line_signatures(im, identifier, outputfile, params):
         numhits = numhits+1
 
         x = np.linspace(0,1,npix)
-        y = np.linspace(0,1,params["InterpLength"])
+        y = np.linspace(0,1,params["interp_length"])
         r_interp = interp1d(x,red_pixels)
         g_interp = interp1d(x,green_pixels)
         b_interp = interp1d(x,blue_pixels)
@@ -105,7 +105,7 @@ def compute_line_signatures(im, identifier, outputfile, params):
     f = open(outputfile,'w')
 
     # if we don't have a ton of lines, dump them out
-    if numhits < params["MaxLineCount"]:
+    if numhits < params["max_line_count"]:
         for l in lines_to_write:
             f.write(identifier+",")
             f.write(l)
