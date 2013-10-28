@@ -1,21 +1,22 @@
-#!/usr/bin/python
-
 import csv
 import urllib
 import os.path
+import config as cfg
 
-data_root = "/Users/Matt/Data/GZTrailFinder/"
-filename = data_root+"sdss_ids_URLs.csv"
-images_root = data_root+"images/"
+params = cfg.read_gztf_config("trailfinder.cfg")
 
+sdss_database = params["sdss_database"]
+images_root = params["images_root"]
+
+##
+## spin through full set of IDs in the SDSS file and
+## download them if they aren't already downloaded.
+##
 i = 1
-
-files = []
-
-with open(filename, 'rb') as csvfile:
-    test = csv.reader(csvfile)
-    for t in test:
-        ustring = t[2]
+with open(sdss_database, 'rb') as csvfile:
+    entries = csv.reader(csvfile)
+    for entry in entries:
+        ustring = entry[2]
         junk1, junk2, imagename = ustring.rpartition("/")
         if not os.path.exists(images_root+imagename):
             print str(i)+" :: "+imagename
