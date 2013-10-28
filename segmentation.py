@@ -5,10 +5,12 @@ def rgb2gray(img_array):
     return img_array
   assert(img_array.shape[2] == 3)
   img_gray_array = np.zeros((img_array.shape[0], img_array.shape[1]), dtype=np.float32)
-  img_gray_array = (img_array[:,:,0] + img_array[:,:,1] + img_array[:,:,2]) / 3.0
+  img_gray_array = (0.333*img_array[:,:,0] + 0.333*img_array[:,:,1] + 0.333*img_array[:,:,2])
   return img_gray_array
 
 def binarize(gray, tau):
     maxval = np.amax(gray)
+    mean = np.mean(gray)
+    stdev = np.std(gray)
 
-    return gray > (maxval * tau)
+    return gray > mean + stdev
