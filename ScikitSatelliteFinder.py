@@ -36,7 +36,7 @@ def rgb2gray(img_array):
   assert(img_array.shape[2] == 3)
   img_gray_array = np.zeros((img_array.shape[0], img_array.shape[1]), dtype=np.float32)
 #  img_gray_array = 0.2989*img_array[:,:,0] + 0.5870*img_array[:,:,1] + 0.1140*img_array[:,:,2]
-  img_gray_array = 0.333*img_array[:,:,0] + 0.333*img_array[:,:,1] + 0.333*img_array[:,:,2]
+  img_gray_array = (img_array[:,:,0] + img_array[:,:,1] + img_array[:,:,2]) / 3.0
   return img_gray_array
 
 def kl(p, q):
