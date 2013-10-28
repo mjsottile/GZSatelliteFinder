@@ -24,4 +24,7 @@ def read_gztf_config(fname):
     cfg["min_line_length"] = config.getint("LineFinding", "MinLineLength")
     cfg["max_line_count"] = config.getint("LineFinding", "MaxLineCount")
 
+    # parameters related to clustering
+    cfg["feature_dim_per_chan"] = config.getint("Clustering", "FeatureDimensionPerChannel")
+
     return cfg

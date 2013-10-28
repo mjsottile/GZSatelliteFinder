@@ -1,16 +1,17 @@
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
-
-# <codecell>
-
+##
+##
+##
 from sklearn import metrics, cluster
 from sklearn.preprocessing import StandardScaler
 import os
 import csv
 import numpy as np
+import config as cfg
 
-# <codecell>
+params = cfg.read_gztf_config("trailfinder.cfg")
 
+# read one CSV file representing a set of line signatures.
+# if the file is empty, return None.
 def readone(fname):
     f = open(fname,'r')
     dat = csv.reader(f)
@@ -24,60 +25,62 @@ def readone(fname):
     
     return (img_name, rows)
 
-# <codecell>
+listing = os.listdir(params["measurements_root"])
 
-path = 'measurements/'
-listing = os.listdir(path)
+print "Reading data."
+
 data = []
 labels = []
 for infile in listing:
-    d = readone("measurements/"+infile)
+    d = readone(params["measurements_root"]+infile)
     if not (d == None):
         lbl,dat = d
         for i in range(len(dat)):
             labels.append(lbl)
         data.extend(dat)
 x = np.array(data)
+
+# debugging : save data in a big file
 np.savetxt('data.dat',x,delimiter=',')
 
-# <codecell>
+# get the interp length
+ilen = params["interp_length"]
 
-num_comp = 4
+num_comp = params["feature_dim_per_chan"]
+
+print x.shape
+
+print "Computing feature vectors."
+
+# 6 elements (mean + std for each channel), and num_comp * 3 features from line data
 fvec = np.empty([len(x),6+(num_comp*3)])
+
+# for each line, create a compressed feature vector.  THIS IS EXPERIMENTAL
 for i in range(0,len(x)):
     line = x[i,6:]
-    rline = sort(abs(diff(line[0:300])))
-    gline = sort(abs(diff(line[300:600])))
-    bline = sort(abs(diff(line[600:900])))
+    rline = np.sort(abs(np.diff(line[0:ilen])))
+    gline = np.sort(abs(np.diff(line[ilen:(2*ilen)])))
+    bline = np.sort(abs(np.diff(line[(2*ilen):(3*ilen)])))
     
     fvec[i,0:num_comp] = rline[-num_comp:]
     fvec[i,num_comp:(2*num_comp)] = gline[-num_comp:]
     fvec[i,(2*num_comp):(3*num_comp)] = bline[-num_comp:]
     fvec[i,(3*num_comp):] = x[i,0:6]
 
-# <codecell>
+## PERFORM CLUSTERING
+
+print "Clustering kmeans."
 
 km=cluster.KMeans(n_clusters=15)
 km.fit(fvec)
 km.labels_
 
-# <codecell>
+print "Clustering af."
 
-af=cluster.AffinityPropagation(damping=0.9).fit(fvec)
+af=cluster.AffinityPropagation(damping=0.6).fit(fvec)
 af.labels_
 
-# <codecell>
-
-s_x=StandardScaler().fit_transform(x)
-db=cluster.DBSCAN(eps=0.1).fit(s_x)
-db.labels_
-
-# <codecell>
-
-wd=cluster.Ward(n_clusters=5).fit(x)
-wd.labels_
-
-# <codecell>
+print "Dumping."
 
 the_labels = km.labels_
 f = open("foo_km.html",'w')
@@ -89,20 +92,6 @@ for i in range(0,max(the_labels)+1):
     f.write("<P>\n")
 f.close()
 
-# <codecell>
-
-the_labels = wd.labels_
-f = open("foo_wd.html",'w')
-for i in range(0,max(the_labels)+1):
-    f.write("<H1>"+str(i)+"</H1>\n")
-    for j in range(0,len(labels)):
-        if the_labels[j] == i:
-            f.write("<IMG TEXT=\""+labels[j]+"\" SRC=\"images/"+labels[j]+".jpg\" WIDTH=80>\n")
-    f.write("<P>\n")
-f.close()
-
-# <codecell>
-
 the_labels = af.labels_
 f = open("foo_af.html",'w')
 for i in range(0,max(the_labels)+1):
@@ -112,7 +101,3 @@ for i in range(0,max(the_labels)+1):
             f.write("<IMG TEXT=\""+labels[j]+"\" SRC=\"images/"+labels[j]+".jpg\" WIDTH=80>\n")
     f.write("<P>\n")
 f.close()
-
-# <codecell>
-
-
