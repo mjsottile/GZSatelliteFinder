@@ -12,7 +12,7 @@ def read_gztf_config(fname):
     # parameters related to file locations
     cfg["data_root"] = config.get('Paths', 'DataRoot')
     cfg["sdss_database"] = cfg["data_root"] + "sdss_ids_URLs.csv"
-    cfg["images_root"] = cfg["data_root"] + "images/"
+    cfg["images_root"] = cfg["data_root"] + "testimages/"
     cfg["measurements_root"] = config.get('Paths', 'MeasurementsRoot')
     cfg["signatures_root"] = config.get('Paths', 'SignaturesRoot')
 
@@ -26,5 +26,7 @@ def read_gztf_config(fname):
 
     # parameters related to clustering
     cfg["feature_dim_per_chan"] = config.getint("Clustering", "FeatureDimensionPerChannel")
+    cfg["kmeans_num_clusters"] = config.getint("Clustering", "KMeansNumClusters")
+    cfg["ap_damping"] = config.getfloat("Clustering", "APDamping")
 
     return cfg

@@ -32,14 +32,14 @@ def lineplot_wrapper(fname, outfile, params):
 
 
 def show_with_lines(fname, im, params):
-    gim = seg.rgb2gray(im)
+    #gim = seg.rgb2gray(im)
 
     stats = str(np.amax(im)) + " " + str(np.mean(im)) + " " + str(np.std(im))
 
-    bin_img = seg.binarize(gim, params["tau"])
+    bin_img = seg.binarize(im)
     h, theta, d = hough_line(bin_img)
 
-    rows, cols = gim.shape
+    rows, cols = bin_img.shape
     i = 0
     for _, angle, dist in zip(*hough_peaks(h, theta, d)):
         i = i + 1
@@ -69,11 +69,13 @@ def show_with_lines(fname, im, params):
     pylab.savefig(fname,format='png')
 
 
-
+i = 0
 with open("interesting_images.txt", 'rb') as listfile:
     for imgfile in listfile:
+        print str(i)
         imgfile = imgfile[:-1]
         outfile = "lineplots/line_" + imgfile[:-4] + ".png"
         imgfile = params["data_root"]+"images/"+imgfile
         if not os.path.exists(outfile):
             lineplot_wrapper(imgfile, outfile, params)
+        i = i+1

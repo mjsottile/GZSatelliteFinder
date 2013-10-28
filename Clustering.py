@@ -74,25 +74,30 @@ for i in range(0,len(x)):
 
 print "Clustering kmeans."
 
-km=cluster.KMeans(n_clusters=15)
+km=cluster.KMeans(n_clusters=params["kmeans_num_clusters"])
 km.fit(fvec)
 #km.labels_
 
 print "Dumping."
 
+didprint = {}
+
 the_labels = km.labels_
 f = open("foo_km.html",'w')
 for i in range(0,max(the_labels)+1):
+    for j in range(0,len(labels)):
+        didprint[labels[j]] = False
     f.write("<H1>"+str(i)+"</H1>\n")
     for j in range(0,len(labels)):
-        if the_labels[j] == i:
+        if (the_labels[j] == i) and (didprint[labels[j]] == False):
+            didprint[labels[j]] = True
             f.write("<IMG TEXT=\""+labels[j]+"\" SRC=\"images/"+labels[j]+".jpg\" WIDTH=80>\n")
     f.write("<P>\n")
 f.close()
 
 print "Clustering af."
 
-af=cluster.AffinityPropagation(damping=0.6).fit(fvec)
+af=cluster.AffinityPropagation(damping=params["ap_damping"]).fit(fvec)
 #af.labels_
 
 print "Dumping."
@@ -100,9 +105,12 @@ print "Dumping."
 the_labels = af.labels_
 f = open("foo_af.html",'w')
 for i in range(0,max(the_labels)+1):
+    for j in range(0,len(labels)):
+        didprint[labels[j]] = False
     f.write("<H1>"+str(i)+"</H1>\n")
     for j in range(0,len(labels)):
-        if the_labels[j] == i:
+        if (the_labels[j] == i) and (didprint[labels[j]] == False):
+            didprint[labels[j]] = True
             f.write("<IMG TEXT=\""+labels[j]+"\" SRC=\"images/"+labels[j]+".jpg\" WIDTH=80>\n")
     f.write("<P>\n")
 f.close()

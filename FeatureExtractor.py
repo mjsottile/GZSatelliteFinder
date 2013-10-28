@@ -32,10 +32,9 @@ def compute_line_signatures(im, identifier, outputfile, params):
         return
 
     # convert image into single gray channel for Hough transform
-    gim = seg.rgb2gray(im)
-    bin_img = seg.binarize(gim, params["tau"])
+    bin_img = seg.binarize(im)
     h, theta, d = hough_line(bin_img)
-    rows, cols = gim.shape
+    rows, cols = bin_img.shape
     
     numhits = 0 
     lines_to_write = []
@@ -72,32 +71,67 @@ def compute_line_signatures(im, identifier, outputfile, params):
         if npix < params["min_line_length"]:
             continue
 
-        # clear the line that we are about to write
-        this_line = ""
-
-        # count the line
-        numhits = numhits+1
-
         x = np.linspace(0,1,npix)
         y = np.linspace(0,1,params["interp_length"])
         r_interp = interp1d(x,red_pixels)
         g_interp = interp1d(x,green_pixels)
         b_interp = interp1d(x,blue_pixels)
 
+        r_fit = r_interp(y)
+        g_fit = g_interp(y)
+        b_fit = b_interp(y)
+
         # basic statistics about each channel
-        rmean = np.mean(red_pixels)
-        rstd = np.std(red_pixels)
-        gmean = np.mean(green_pixels)
-        gstd = np.std(green_pixels)
-        bmean = np.mean(blue_pixels)
-        bstd = np.std(blue_pixels)
+        rmean = np.mean(r_fit)
+        rstd = np.std(r_fit)
+        gmean = np.mean(g_fit)
+        gstd = np.std(g_fit)
+        bmean = np.mean(b_fit)
+        bstd = np.std(b_fit)
+
+        if (rmean > gmean and rmean > bmean):
+            # red brightest
+            if (rmean-rstd > gmean and rmean-rstd > bmean):
+                # hit! red
+                print "HIT RED"
+            else:
+                continue
+
+        elif (gmean > rmean and gmean > bmean):
+            # green brightest
+            if (gmean-gstd > rmean and gmean-gstd > bmean):
+                # hit! green
+                print "HIT GREEN"
+            else:
+                continue
+
+        elif (bmean > rmean and bmean > gmean):
+            # blue brightest
+            if (bmean-bstd > rmean and bmean-bstd > gmean):
+                # hit! blue
+                print "HIT BLUE"
+            else:
+                continue
+
+        else:
+            print "BAD!"
+            print str(rmean) + "/" + str(rstd) + "   " + str(gmean) + "/" + str(gstd) + "   " + str(bmean) + "/" + str(bstd)
+            continue
+
+        # clear the line that we are about to write
+        this_line = ""
+
+        # count the line
+        numhits = numhits+1
+
+#        print str(rmean) + "/" + str(rstd) + "   " + str(gmean) + "/" + str(gstd) + "   " + str(bmean) + "/" + str(bstd)
 
         this_line = this_line + (str(rmean)+","+str(rstd)+","+
                                  str(gmean)+","+str(gstd)+","+
                                  str(bmean)+","+str(bstd)+",")
-        this_line = this_line + (U.intercalate(r_interp(y)) + ",")
-        this_line = this_line + (U.intercalate(g_interp(y)) + ",")
-        this_line = this_line + (U.intercalate(b_interp(y)) + "\n")
+        this_line = this_line + (U.intercalate(r_fit) + ",")
+        this_line = this_line + (U.intercalate(g_fit) + ",")
+        this_line = this_line + (U.intercalate(b_fit) + "\n")
 
         lines_to_write.append(this_line)
         
