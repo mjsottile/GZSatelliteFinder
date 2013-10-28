@@ -1,17 +1,22 @@
 #!/usr/bin/python
 
+##
+# stage 1 script: generation of feature vectors from
+# source images.
+##
+
 import csv
 import ScikitSatelliteFinder as ssf
 import os.path
 
 data_root = "/Users/Matt/data/GZTrailFinder/"
-filename = data_root+"sdss_ids_URLs.csv"
+sdss_id_database = data_root+"sdss_ids_URLs.csv"
 images_root = data_root+"images/"
 measurements_root = "./measurements/"
 
 i = 0
 
-with open(filename, 'rb') as csvfile:
+with open(sdss_id_database, 'rb') as csvfile:
     test = csv.reader(csvfile)
     for t in test:
         ustring = t[2]
