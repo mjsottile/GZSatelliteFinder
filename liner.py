@@ -12,6 +12,7 @@ import math as M
 import os.path
 import segmentation as seg
 import Utilities as U
+import csv
 
 import config as cfg
 
@@ -68,14 +69,23 @@ def show_with_lines(fname, im, params):
 
     pylab.savefig(fname,format='png')
 
+interesting_images = "/Users/Matt/Documents/Blog Posts/gzblogpost_images/"
 
 i = 0
-with open("interesting_images.txt", 'rb') as listfile:
-    for imgfile in listfile:
-        print str(i)
-        imgfile = imgfile[:-1]
-        outfile = "lineplots/line_" + imgfile[:-4] + ".png"
-        imgfile = params["data_root"]+"images/"+imgfile
-        if not os.path.exists(outfile):
-            lineplot_wrapper(imgfile, outfile, params)
-        i = i+1
+with open(params["sdss_database"], 'rb') as csvfile:
+    test = csv.reader(csvfile)
+    for t in test:
+        ustring = t[2]
+        junk1, junk2, imagename = ustring.rpartition("/")
+
+        image_file = interesting_images+imagename
+
+        if os.path.exists(image_file):
+            print str(i)+" :: "+imagename
+
+            identifier, junk1, junk2 = imagename.rpartition(".")
+            lineimage = params["lineplots_root"]+identifier+".png"
+
+            if not os.path.exists(lineimage):
+                lineplot_wrapper(image_file, lineimage, params)
+        i = i + 1
