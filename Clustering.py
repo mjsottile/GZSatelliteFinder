@@ -41,14 +41,14 @@ for infile in listing:
 x = np.array(data)
 
 ### debugging : save data in a big file
-# np.savetxt('data.dat',x,delimiter=',')
+np.savetxt('data.dat',x,delimiter=',')
 
 # get the interp length
 ilen = params["interp_length"]
 
 num_comp = params["feature_dim_per_chan"]
 
-print x.shape
+print "Data shape is " + str(x.shape)
 
 print "Computing feature vectors."
 
@@ -58,12 +58,12 @@ fvec = np.empty([len(x),6+(num_comp*3)])
 # for each line, create a compressed feature vector.  THIS IS EXPERIMENTAL
 for i in range(0,len(x)):
     line = x[i,6:]
-#    rline = np.sort(abs(np.diff(line[0:ilen])))
-#    gline = np.sort(abs(np.diff(line[ilen:(2*ilen)])))
-#    bline = np.sort(abs(np.diff(line[(2*ilen):(3*ilen)])))
-    rline = np.sort(line[0:ilen]) 
-    gline = np.sort(line[ilen:(2*ilen)]) 
-    bline = np.sort(line[(2*ilen):(3*ilen)]) 
+    rline = np.sort(abs(np.diff(line[0:ilen])))
+    gline = np.sort(abs(np.diff(line[ilen:(2*ilen)])))
+    bline = np.sort(abs(np.diff(line[(2*ilen):(3*ilen)])))
+#    rline = np.sort(line[0:ilen]) 
+#    gline = np.sort(line[ilen:(2*ilen)]) 
+#    bline = np.sort(line[(2*ilen):(3*ilen)]) 
 
     fvec[i,0:num_comp] = rline[-num_comp:]
     fvec[i,num_comp:(2*num_comp)] = gline[-num_comp:]
