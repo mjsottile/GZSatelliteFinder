@@ -1,4 +1,5 @@
 import numpy as np
+import skimage.filter as F
 
 def binarize(img_array):
   if len(img_array.shape) < 3:
@@ -11,23 +12,11 @@ def binarize(img_array):
   gchan = img_array[:,:,1]
   bchan = img_array[:,:,2]
 
-  rmean = np.mean(rchan)
-  rstd = np.std(rchan)
-  gmean = np.mean(gchan)
-  gstd = np.std(gchan)
-  bmean = np.mean(bchan)
-  bstd = np.std(bchan)
+  # use Otsu's method to determine which threshold value is appropriate
+  # in each color channel
+  rthresh = F.threshold_otsu(rchan)
+  gthresh = F.threshold_otsu(gchan)
+  bthresh = F.threshold_otsu(bchan)
 
-  img_bin_array = ((rchan > rmean + rstd) + (gchan > gmean + gstd) + \
-    (bchan > bmean + bstd)) > 0.99
-
-  # each channel contributes 1/3 to each pixel
-  #img_gray_array = (0.333*rchan + 0.333*gchan + 0.333*bchan)
+  img_bin_array = ((rchan > rthresh) + (gchan > gthresh) + (bchan > bthresh)) > 0.99
   return img_bin_array
-
-#def binarize(gray, tau):
-#    maxval = np.amax(gray)
-#    mean = np.mean(gray)
-#    stdev = np.std(gray)
-#
-#    return gray > mean + stdev
