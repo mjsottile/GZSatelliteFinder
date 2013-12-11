@@ -25,6 +25,12 @@ images_root = params["images_root"]
 # read training set
 db = mysdss.read_sdss_trainingset("training_set.csv")
 
+# convert labels to ints
+for gz_id in db:
+    db[gz_id] = int(db[gz_id])
+max_category = max(db.values())
+min_category = min(db.values())
+
 totrows = 0
 data = []
 print "Computing features."
@@ -55,4 +61,13 @@ for l in range(n):
 for gz_id in db:
     lookup[gz_id] = list(set(lookup[gz_id]))
 
-print lookup
+# perform binning
+bins = np.zeros((params["kmeans_num_clusters"], (max_category-min_category)+1))
+
+# create matrix of kmeans category vs training set label to determine which
+# kmeans category most frequently patches a given training label
+for gz_id in db:
+    for km_cat in lookup[gz_id]:
+        bins[km_cat-1, db[gz_id]-1] = bins[km_cat-1, db[gz_id]-1]+1
+
+print bins

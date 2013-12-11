@@ -1,6 +1,4 @@
-from skimage.transform import (hough_line, hough_peaks,
-                               probabilistic_hough)
-from skimage.filter import canny
+from skimage.transform import (hough_line, hough_line_peaks)
 from skimage import data
 from scipy.interpolate import interp1d
 import pylab
@@ -43,7 +41,7 @@ def compute_line_signatures(im, params):
     # transform.  hough_peaks takes the theta/rho form and
     # filters it for significant peaks corresponding to strong
     # line signals in the image. 
-    for _, angle, dist in zip(*hough_peaks(h, theta, d)):
+    for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
         # compute coordinate set for pixels that lie along the line
         xs = np.arange(0,cols-1)
         ys = (dist - xs*np.cos(angle))/np.sin(angle)
