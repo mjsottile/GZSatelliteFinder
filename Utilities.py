@@ -1,6 +1,8 @@
+"""Utility functions for use in the GZ code.
+"""
 import numpy as np
 
-def kl(p, q):
+def kullback_leibler(p, q):
     """Kullback-Leibler divergence D(P || Q) for discrete distributions
  
     Parameters
@@ -14,4 +16,7 @@ def kl(p, q):
     return np.sum(np.where(p != 0, p * np.log(p / q), 0))
 
 def intercalate(l):
-    return ",".join(map(str,l))
+    """Specialization of the generic intercalate function that is 
+       found in the Haskell Data.List package, to put commas between
+       list elements when concatenating them together."""
+    return ",".join(map(str, l))
