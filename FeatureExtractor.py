@@ -1,17 +1,15 @@
+"""Module of functions related to feature extraction for the 
+   ZooniBot artifact detection helper."""
 from skimage.transform import (hough_line, hough_line_peaks)
-from skimage import data
 from scipy.interpolate import interp1d
-import pylab
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib
 import scipy.ndimage as I
-import math as M
 import segmentation as seg
-import Utilities as U 
-import pandas as pd
 
 def line_signature_wrapper(fname, params):
+    """Wrapper around the line signature computation that tries
+       to load the image and then passes it off to the actual
+       feature computation."""
     try:
         im = I.imread(fname)
     except:
@@ -25,6 +23,8 @@ def line_signature_wrapper(fname, params):
     return compute_line_signatures(im, params)
 
 def compute_line_signatures(im, params):
+    """Using the Hough transform, create a signature for an image
+       based on extracted lines."""
     # convert image into single gray channel for Hough transform
     bin_img = seg.binarize(im)
     h, theta, d = hough_line(bin_img)
@@ -43,7 +43,7 @@ def compute_line_signatures(im, params):
     # line signals in the image. 
     for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
         # compute coordinate set for pixels that lie along the line
-        xs = np.arange(0,cols-1)
+        xs = np.arange(0, cols-1)
         ys = (dist - xs*np.cos(angle))/np.sin(angle)
 
         # likely have points outside the bounds of the image, so mask
@@ -53,9 +53,9 @@ def compute_line_signatures(im, params):
         ys_mask = np.floor(ys[mask])
 
         # split image into channels
-        rchan = im[:,:,0]
-        gchan = im[:,:,1]
-        bchan = im[:,:,2]
+        rchan = im[:, :, 0]
+        gchan = im[:, :, 1]
+        bchan = im[:, :, 2]
         
         # color channels along line
         red_pixels = rchan[ys_mask.astype(int), xs_mask.astype(int)]
@@ -69,11 +69,11 @@ def compute_line_signatures(im, params):
         if npix < params["min_line_length"]:
             continue
 
-        x = np.linspace(0,1,npix)
-        y = np.linspace(0,1,params["interp_length"])
-        r_interp = interp1d(x,red_pixels)
-        g_interp = interp1d(x,green_pixels)
-        b_interp = interp1d(x,blue_pixels)
+        x = np.linspace(0, 1, npix)
+        y = np.linspace(0, 1, params["interp_length"])
+        r_interp = interp1d(x, red_pixels)
+        g_interp = interp1d(x, green_pixels)
+        b_interp = interp1d(x, blue_pixels)
 
         # resample lines using interpolators for each channel
         r_fit = r_interp(y)
@@ -84,7 +84,7 @@ def compute_line_signatures(im, params):
         numhits = numhits+1
 
         # add a row to the list with the color channels appended RGB
-        rowdata.append(np.append(np.append(r_fit,g_fit),b_fit))
+        rowdata.append(np.append(np.append(r_fit, g_fit), b_fit))
 
     # done, mash all together
     return np.array(rowdata)

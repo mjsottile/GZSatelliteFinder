@@ -1,11 +1,13 @@
+"""Support code for reading and interpreting configuration files
+   such that a data structure is created that can be used throughout
+   the program so different functions can access the appropriate
+   parameters."""
 import ConfigParser
 
 def read_gztf_config(fname):
-    ##
-    ## read the config file for paths and other parameters
-    ##
+    """read the config file for paths and other parameters"""
     config = ConfigParser.RawConfigParser()
-    config.read('trailfinder.cfg')
+    config.read(fname)
 
     cfg = {}
 
@@ -26,8 +28,10 @@ def read_gztf_config(fname):
     cfg["max_line_count"] = config.getint("LineFinding", "MaxLineCount")
 
     # parameters related to clustering
-    cfg["feature_dim_per_chan"] = config.getint("Clustering", "FeatureDimensionPerChannel")
-    cfg["kmeans_num_clusters"] = config.getint("Clustering", "KMeansNumClusters")
+    cfg["feature_dim_per_chan"] = config.getint("Clustering", 
+                                                "FeatureDimensionPerChannel")
+    cfg["kmeans_num_clusters"] = config.getint("Clustering", 
+                                               "KMeansNumClusters")
     cfg["ap_damping"] = config.getfloat("Clustering", "APDamping")
 
     return cfg
