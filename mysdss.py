@@ -10,8 +10,8 @@ def read_sdss_database(sdss_file):
         entries = csv.reader(csvfile)
         for entry in entries:
             entry_dict = {}
-            entry_dict['SDSS_ID'] = entry[0]
-            entry_dict['GZ_ID'] = entry[1]
+            entry_dict['GZ_ID'] = entry[0]
+            entry_dict['SDSS_ID'] = entry[1]
             entry_dict['amazon_url'] = entry[2]
             dbdata.append(entry_dict)
     return dbdata
