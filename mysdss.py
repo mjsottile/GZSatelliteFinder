@@ -15,14 +15,3 @@ def read_sdss_database(sdss_file):
             entry_dict['amazon_url'] = entry[2]
             dbdata.append(entry_dict)
     return dbdata
-
-def read_sdss_trainingset(training_file):
-    '''return a map of GZ_ID to classification'''
-    dbdata = {}
-    with open(training_file, 'rb') as csvfile:
-        entries = csv.reader(csvfile)
-        for entry in entries:
-            if entry[0][0] == "#":
-                continue
-            dbdata[entry[0]] = entry[1]
-    return dbdata
