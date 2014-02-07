@@ -31,12 +31,7 @@ def lineplot_wrapper(fname, outfile, params):
 
     show_with_lines(outfile, im, params)
 
-
 def show_with_lines(fname, im, params):
-    #gim = seg.rgb2gray(im)
-
-    stats = str(np.amax(im)) + " " + str(np.mean(im)) + " " + str(np.std(im))
-
     bin_img = seg.binarize(im)
     h, theta, d = hough_line(bin_img)
 
@@ -61,7 +56,6 @@ def show_with_lines(fname, im, params):
         ax1.plot((0, cols), (y0, y1), '-r')
         ax2.plot((0, cols), (y0, y1), '-r')
 
-    print "Writing "+fname
     ax1.axis((0, cols, rows, 0))
     ax2.axis((0, cols, rows, 0))
     ax1.axis('off')
@@ -69,23 +63,3 @@ def show_with_lines(fname, im, params):
 
     pylab.savefig(fname,format='png')
 
-interesting_images = "/Users/Matt/Documents/Blog Posts/gzblogpost_images/"
-
-i = 0
-with open(params["sdss_database"], 'rb') as csvfile:
-    test = csv.reader(csvfile)
-    for t in test:
-        ustring = t[2]
-        junk1, junk2, imagename = ustring.rpartition("/")
-
-        image_file = interesting_images+imagename
-
-        if os.path.exists(image_file):
-            print str(i)+" :: "+imagename
-
-            identifier, junk1, junk2 = imagename.rpartition(".")
-            lineimage = params["lineplots_root"]+identifier+".png"
-
-            if not os.path.exists(lineimage):
-                lineplot_wrapper(image_file, lineimage, params)
-        i = i + 1

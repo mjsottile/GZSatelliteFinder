@@ -16,7 +16,7 @@ sdss_db = mysdss.read_sdss_database(sdss_database)
 ##
 i = 1
 for entry in sdss_db:
-    imagename = entry['GZ_ID']+".jpg"
+    imagename = entry['SDSS_ID']+".jpg"
     if not os.path.exists(images_root+imagename):
         print str(i)+" :: "+imagename
         image = urllib.URLopener()

@@ -1,4 +1,4 @@
-"""Utility functions for use in the GZ code.
+"""Utility functions
 """
 import numpy as np
 
