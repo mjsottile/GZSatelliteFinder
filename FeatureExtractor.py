@@ -35,13 +35,15 @@ def compute_line_signatures(im, params):
     numhits = 0 
 
     # rows list
-    rowdata = []
+    row_data = []
+    row_hists = []
+    row_line = []
 
     # spin through full set of lines that match via the Hough
     # transform.  hough_peaks takes the theta/rho form and
     # filters it for significant peaks corresponding to strong
     # line signals in the image. 
-    for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
+    for _, angle, dist in zip(*hough_line_peaks(h, theta, d, threshold=0.8*np.max(h), min_angle=30, min_distance=20)):
         # compute coordinate set for pixels that lie along the line
         xs = np.arange(0, cols-1)
         ys = (dist - xs*np.cos(angle))/np.sin(angle)
@@ -80,11 +82,73 @@ def compute_line_signatures(im, params):
         g_fit = g_interp(y)
         b_fit = b_interp(y)
 
+        # compute histograms for each line
+        (r_hist,junk) = np.histogram(r_fit, bins=255, range=(0,255))
+        (g_hist,junk) = np.histogram(g_fit, bins=255, range=(0,255))
+        (b_hist,junk) = np.histogram(b_fit, bins=255, range=(0,255))
+
         # count the line
         numhits = numhits+1
 
         # add a row to the list with the color channels appended RGB
-        rowdata.append(np.append(np.append(r_fit, g_fit), b_fit))
+        row_data.append(np.append(np.append(r_fit, g_fit), b_fit))
+        row_hists.append(np.append(np.append(r_hist, g_hist), b_hist))
+        row_line.append((angle,dist))
 
     # done, mash all together
-    return np.array(rowdata)
+    return (np.array(row_data), np.array(row_hists), row_line)
+
+def compute_sig_objects(rd,rh,rl):
+    if (rd.size == 0):
+        return []
+
+    (numlines,_) = rd.shape
+    
+    objs = []
+    
+    for i in range(0,numlines):
+        objs.append(LineSignature(rd[i,:],rh[i,:],rl[i]))
+        
+    return objs
+
+def is_it_a_trail(o):
+    rg=np.sqrt(1./200. * sum((o.r_data-o.g_data)**2))*max(o.r_data.mean(),o.g_data.mean())/min(o.r_data.mean(),o.g_data.mean())
+    rb=np.sqrt(1./200. * sum((o.r_data-o.b_data)**2))*max(o.r_data.mean(),o.b_data.mean())/min(o.r_data.mean(),o.b_data.mean())
+    gb=np.sqrt(1./200. * sum((o.g_data-o.b_data)**2))*max(o.g_data.mean(),o.b_data.mean())/min(o.g_data.mean(),o.b_data.mean())
+    
+    rgrb = abs(np.log(rg)-np.log(rb))
+    rggb = abs(np.log(rg)-np.log(gb))
+    rbgb = abs(np.log(rb)-np.log(gb))
+    
+#    print rgrb
+#    print rggb
+#    print rbgb
+    
+    if (rgrb > 3 and rbgb > 3 and rggb < 1):
+        return True
+        #print "Dominant green."
+    elif (rgrb > 3 and rggb > 3 and rbgb < 1):
+        return True
+        #print "Dominant blue"
+    elif (rgrb < 1 and rbgb > 3 and rggb > 3):
+        return True
+        #print "Dominant red"
+    else:
+        return False
+        #print "No dominant line."
+
+class LineSignature:
+    def __init__(self, rd, rh, rl):
+        cols = rd.size
+
+        perchan = cols/3
+
+        self.r_data = rd[0:perchan]
+        self.g_data = rd[perchan:perchan*2]
+        self.b_data = rd[perchan*2:perchan*3]
+
+        self.r_hist = rh[0:255]
+        self.g_hist = rh[255:255*2]
+        self.b_hist = rh[255*2:255*3]
+
+        (self.angle, self.dist) = rl

@@ -5,7 +5,6 @@
 # source images.
 ##
 
-from IPython.parallel import Client
 import csv
 import FeatureExtractor as features
 import os.path
@@ -20,12 +19,20 @@ sdss_db = mysdss.read_sdss_database(sdss_database)
 # first, build up a list of files that exist from the SDSS database
 image_files = []
 for entry in sdss_db:
-    imagename = entry['SDSS_ID']+".jpg"
+    imagename = params["data_root"]+"/images/"+entry['SDSS_ID']+".jpg"
     if os.path.exists(imagename):
-        # check if it has already been measured
-        measurement_file = params["measurements_root"]+entry['SDSS_ID']+".dat"
-        if not os.path.exists(measurement_file):
-            image_files.append((imagename,measurement_file))
+        (rd,rh,rl) = features.line_signature_wrapper(imagename,params)
+
+        ### NO LINES.
+        if (rd.size == 0):
+            continue
+
+        objs = features.compute_sig_objects(rd,rh,rl)
+
+        for o in objs:
+            if (features.is_it_a_trail(o)):
+                print imagename
+                break
 
 # second, spin through files that exist and have not been
 # measured yet, and invoke the measurer
