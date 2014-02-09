@@ -21,7 +21,12 @@ image_files = []
 for entry in sdss_db:
     imagename = params["data_root"]+"/images/"+entry['SDSS_ID']+".jpg"
     if os.path.exists(imagename):
-        (rd,rh,rl) = features.line_signature_wrapper(imagename,params)
+        retval = features.line_signature_wrapper(imagename,params)
+
+        if (retval == None):
+            continue
+
+        (rd,rh,rl) = retval
 
         ### NO LINES.
         if (rd.size == 0):

@@ -20,6 +20,9 @@ def line_signature_wrapper(fname, params):
         print fname+" is not color.  skipping."
         return
 
+    if saturated_channel(im):
+        return None
+
     return compute_line_signatures(im, params)
 
 def compute_line_signatures(im, params):
@@ -111,6 +114,20 @@ def compute_sig_objects(rd,rh,rl):
         
     return objs
 
+def saturated_channel(im):
+    rv = im[:,:,0].mean() - im[:,:,0].std()
+    gv = im[:,:,1].mean() - im[:,:,1].std()
+    bv = im[:,:,2].mean() - im[:,:,2].std()
+
+    if (rv > 10):
+        return True
+    elif (gv > 10):
+        return True
+    elif (bv > 10):
+        return True
+    else:
+        return False
+
 def is_it_a_trail(o):
     rg=np.sqrt(1./200. * sum((o.r_data-o.g_data)**2))*max(o.r_data.mean(),o.g_data.mean())/min(o.r_data.mean(),o.g_data.mean())
     rb=np.sqrt(1./200. * sum((o.r_data-o.b_data)**2))*max(o.r_data.mean(),o.b_data.mean())/min(o.r_data.mean(),o.b_data.mean())
@@ -119,10 +136,6 @@ def is_it_a_trail(o):
     rgrb = abs(np.log(rg)-np.log(rb))
     rggb = abs(np.log(rg)-np.log(gb))
     rbgb = abs(np.log(rb)-np.log(gb))
-    
-#    print rgrb
-#    print rggb
-#    print rbgb
     
     if (rgrb > 3 and rbgb > 3 and rggb < 1):
         return True
