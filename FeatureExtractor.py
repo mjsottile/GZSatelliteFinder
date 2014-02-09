@@ -138,16 +138,16 @@ def is_it_a_trail(o):
     rbgb = abs(np.log(rb)-np.log(gb))
     
     if (rgrb > 3 and rbgb > 3 and rggb < 1):
-        return True
+        return (True,1)
         #print "Dominant green."
     elif (rgrb > 3 and rggb > 3 and rbgb < 1):
-        return True
+        return (True,2)
         #print "Dominant blue"
     elif (rgrb < 1 and rbgb > 3 and rggb > 3):
-        return True
+        return (True,3)
         #print "Dominant red"
     else:
-        return False
+        return (False,0)
         #print "No dominant line."
 
 class LineSignature:
