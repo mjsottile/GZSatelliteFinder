@@ -27,6 +27,7 @@ class Root(object):
 
     def do_line_search(self, fname):
         retval = features.line_signature_wrapper(fname,self.config)
+
         if (retval == None):
             return (False,-1)
 
@@ -37,10 +38,13 @@ class Root(object):
             return (False,-1)
 
         objs = features.compute_sig_objects(rd,rh,rl)
+
         for o in objs:
             (bool,which) = features.is_it_a_trail(o)
             if bool:
                 return (True, which)
+        
+        return (False, -1)
 
     def refresh_sdss_db(self):
         if self.sdss_db==None:
@@ -132,6 +136,7 @@ class Root(object):
         mystring += '<P>'+self.decode_simbad_type(simbad_type)
 
         (is_line, which) = self.do_line_search(self.latest_image)
+
         if is_line:
             mystring += "<P>Hough filter detects a trail in the "
             if which == 1:
