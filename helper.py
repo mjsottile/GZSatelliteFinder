@@ -7,6 +7,7 @@ import csv
 import os.path
 import FeatureExtractor as features
 import config as cfg
+import LinePlotter as lines
 
 def genform():
     return """
@@ -109,6 +110,14 @@ class Root(object):
         return '<HTML>'+genform()+'</HTML>'
 
     @cherrypy.expose
+    def showLatestLineImage(self):
+        cherrypy.response.headers['Content-Type'] = 'application/jpeg'
+        f = open(self.latest_lines_image, 'r')
+        data = f.read()
+        f.close()
+        return data
+
+    @cherrypy.expose
     def showLatestImage(self):
         cherrypy.response.headers['Content-Type'] = 'application/jpeg'
         f = open(self.latest_image, 'r')
@@ -129,11 +138,7 @@ class Root(object):
         else:
             mystring += '<P>No definitive trail mask is present from SDSS.'
 
-        mystring += '<P>InsideMask = '+str(sdss_result['insideMask'])
-
-        simbad_type = self.query_simbad(sdss_result['ra'],sdss_result['dec'])
-
-        mystring += '<P>'+self.decode_simbad_type(simbad_type)
+        debug_string = '<P>SDSS InsideMask Column = '+str(sdss_result['insideMask'])
 
         (is_line, which) = self.do_line_search(self.latest_image)
 
@@ -145,10 +150,23 @@ class Root(object):
                 mystring += "blue channel"
             elif which == 3:
                 mystring += "red channel"
+            
+            outfile = "/home/matt/gzhelper/images/lines_"+str(objid)+".jpg"
+            self.latest_lines_image = outfile
+            lines.lineplot_wrapper(self.latest_image, outfile, self.config)
+            debug_string += '<P>Image w/ Hough results highlighted below.<P><IMG SRC="/showLatestLineImage"><P>'
         else:
             mystring += "<P>No trail detected via Hough method."
+            outfile = "/home/matt/gzhelper/images/lines_"+str(objid)+".jpg"
+            self.latest_lines_image = outfile
+            lines.lineplot_wrapper(self.latest_image, outfile, self.config)
+            debug_string += '<P>Image w/ Hough results highlighted below.<P><IMG SRC="/showLatestLineImage"><P>'
 
-        return '<HTML><IMG SRC="/showLatestImage"><P>'+mystring+'</HTML>'
+        simbad_type = self.query_simbad(sdss_result['ra'],sdss_result['dec'])
+
+        mystring += '<P>'+self.decode_simbad_type(simbad_type)
+
+        return '<HTML><IMG SRC="/showLatestImage"><P>'+mystring+'<P><HR><P><I>Debugging info:</I><P>'+debug_string+'</HTML>'
 
     def decode_simbad_type(self, ty):
         if ty=="PN":
@@ -162,7 +180,7 @@ class Root(object):
         elif ty=="Galaxy":
             return "SIMBAD indicates that this object is a galaxy."
         else:
-            return "SIMBAD didn't return anything useful for this object."
+            return "SIMBAD didn't return anything useful for this object.  ("+ty+")"
 
 if __name__ == '__main__':
     cherrypy.server.socket_host = '0.0.0.0'

@@ -136,6 +136,9 @@ def is_it_a_trail(o):
     rgrb = abs(np.log(rg)-np.log(rb))
     rggb = abs(np.log(rg)-np.log(gb))
     rbgb = abs(np.log(rb)-np.log(gb))
+
+    print (rg,rb,gb)
+    print (rgrb,rggb,rbgb)
     
     if (rgrb > 3 and rbgb > 3 and rggb < 1):
         return (True,1)
