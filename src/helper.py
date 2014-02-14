@@ -179,6 +179,10 @@ class Root(object):
             return "SIMBAD indicates that this object is a radio galaxy."
         elif ty=="Galaxy":
             return "SIMBAD indicates that this object is a galaxy."
+        elif ty=="GinGroup":
+            return "SIMBAD indicates that this object is a galaxy in a group of galaxies."
+        elif ty=="GinCl":
+            return "SIMBAD indicates that this is a galaxy in a cluster of galaxies."
         else:
             return "SIMBAD didn't return anything useful for this object.  ("+ty+")"
 
