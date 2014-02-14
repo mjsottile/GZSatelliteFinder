@@ -1,12 +1,1 @@
-IPython notebook for testing satellite artifacts in galaxyzoo images.
-
-The test images were downloaded from the galaxyzoo site.
-
-Requires the usual Python packages:
-
-matplotlib
-scipy
-scikit-image
-numpy
-
-
+Experimental code for processing SDSS images that are part of the GalaxyZoo set, and determining whether or not they contain imaging artifacts.
