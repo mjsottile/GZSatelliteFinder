@@ -41,7 +41,7 @@ class Root(object):
         objs = features.compute_sig_objects(rd,rh,rl)
 
         for o in objs:
-            (bool,which) = features.is_it_a_trail(o)
+            (bool,which) = features.is_it_a_trail(o, self.config)
             if bool:
                 return (True, which)
         
@@ -59,8 +59,6 @@ class Root(object):
             print "Using cached SDSS DB"
 
     def get_gz_image(self, objid):
-        self.refresh_sdss_db()
-
         fname = self.image_cache+str(objid)+".jpg"
         if not os.path.exists(fname):
             image = urllib.URLopener()
@@ -132,6 +130,10 @@ class Root(object):
 
         if len(objid)<1:
             return "<HTML><BODY>No ID provided.</BODY></HTML>"
+
+        self.refresh_sdss_db()
+        if not(objid in self.sdss_db):
+            return "<HTML><BODY>ID does not match any in the GZ image set.</BODY></HTML>"
 
         # remove leading and trailing whitespace
         objid = objid.strip()

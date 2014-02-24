@@ -128,7 +128,7 @@ def saturated_channel(im):
     else:
         return False
 
-def is_it_a_trail(o):
+def is_it_a_trail(o, params):
     rg=np.sqrt(1./params["interp_length"] * sum((o.r_data-o.g_data)**2))*max(o.r_data.mean(),o.g_data.mean())/min(o.r_data.mean(),o.g_data.mean())
     rb=np.sqrt(1./params["interp_length"] * sum((o.r_data-o.b_data)**2))*max(o.r_data.mean(),o.b_data.mean())/min(o.r_data.mean(),o.b_data.mean())
     gb=np.sqrt(1./params["interp_length"] * sum((o.g_data-o.b_data)**2))*max(o.g_data.mean(),o.b_data.mean())/min(o.g_data.mean(),o.b_data.mean())
