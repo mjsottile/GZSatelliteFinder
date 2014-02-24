@@ -131,12 +131,12 @@ class Root(object):
         if len(objid)<1:
             return "<HTML><BODY>No ID provided.</BODY></HTML>"
 
+        # remove leading and trailing whitespace
+        objid = objid.strip()
+
         self.refresh_sdss_db()
         if not(objid in self.sdss_db):
             return "<HTML><BODY>ID does not match any in the GZ image set.</BODY></HTML>"
-
-        # remove leading and trailing whitespace
-        objid = objid.strip()
 
         self.get_gz_image(objid)
         sdss_result = self.query_sdss(objid)
