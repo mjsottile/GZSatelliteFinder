@@ -37,7 +37,10 @@ def show_with_lines(fname, im, params):
     ax1.imshow(bin_img, cmap=plt.cm.gray)
     ax2.imshow(im)
 
-    for _, angle, dist in zip(*hough_line_peaks(h, theta, d, threshold=0.8*np.max(h), min_angle=30, min_distance=20)):
+    for _, angle, dist in zip(*hough_line_peaks(h, theta, d, 
+                                                threshold=params["threshold_scale"]*np.max(h), 
+                                                min_angle=params["min_angle"], 
+                                                min_distance=params["min_distance"])):
         y0 = (dist - 0 * np.cos(angle)) / np.sin(angle)
         y1 = (dist - cols * np.cos(angle)) / np.sin(angle)
 
