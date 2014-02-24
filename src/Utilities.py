@@ -2,6 +2,49 @@
 """
 import numpy as np
 
+#
+# vectorized version of bresenham's line drawing algorithm
+# based on matlab code found online here:
+#   http://www.mathworks.com/matlabcentral/fileexchange/28190-bresenham-optimized-for-matlab/content/bresenham.m
+#
+def bresenham(x1,y1,x2,y2):
+    x1 = round(x1)
+    x2 = round(x2)
+    y1 = round(y1)
+    y2 = round(y2)
+    dx = abs(x2-x1)
+    dy = abs(y2-y1)
+    steep = abs(dy)>abs(dx)
+    if steep:
+        t = dx;
+        dx = dy;
+        dy = t;
+    if dy==0:
+        q=np.zeros((dx+1,1))
+    else:
+        q=np.append(np.array([0]),np.where(np.diff(np.mod(np.arange(np.floor(dx/2),-dy*dx+np.floor(dx/2),-dy),dx))>=0,1,0))
+        
+    if steep:
+        if y1<=y2:
+            y = np.arange(y1,y2)
+        else:
+            y = np.arange(y1,y2,-1)
+        if x1<=x2:
+            x = x1+np.cumsum(q)
+        else:
+            x = x1-np.cumsum(q)
+    else:
+        if x1<=x2:
+            x = np.arange(x1,x2)
+        else:
+            x = np.arange(x1,x2,-1)
+        if y1<=y2:
+            y = y1 + np.cumsum(q)
+        else:
+            y = y1 - np.cumsum(q)
+
+    return (x,y)
+
 def kullback_leibler(p, q):
     """Kullback-Leibler divergence D(P || Q) for discrete distributions
  
