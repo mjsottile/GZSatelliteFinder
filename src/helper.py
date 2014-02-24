@@ -74,7 +74,6 @@ class Root(object):
         data['script'] = script
         fullurl = baseurl + "?" + urllib.urlencode(data)
         response = urllib2.urlopen(fullurl)
-        print fullurl
         keep_next = False
         val = ""
         for line in response:
