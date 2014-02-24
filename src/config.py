@@ -19,19 +19,12 @@ def read_gztf_config(fname):
     cfg["signatures_root"] = config.get('Paths', 'SignaturesRoot')
     cfg["lineplots_root"] = config.get('Paths', 'LineplotsRoot')
 
-    # parameters related to segmentation
-    cfg["tau"] = config.getfloat("Segmentation", "Tau")
-
     # parameters related to feature identification
     cfg["interp_length"] = config.getint("LineFinding", "InterpLength")
     cfg["min_line_length"] = config.getint("LineFinding", "MinLineLength")
     cfg["max_line_count"] = config.getint("LineFinding", "MaxLineCount")
-
-    # parameters related to clustering
-    cfg["feature_dim_per_chan"] = config.getint("Clustering", 
-                                                "FeatureDimensionPerChannel")
-    cfg["kmeans_num_clusters"] = config.getint("Clustering", 
-                                               "KMeansNumClusters")
-    cfg["ap_damping"] = config.getfloat("Clustering", "APDamping")
+    cfg["min_angle"] = config.getint("LineFinding", "MinAngle")
+    cfg["min_distance"] = config.getint("LineFinding", "MinDistance")
+    cfg["threshold_scale"] = config.getfloat("LineFinding", "ThresholdScale")
 
     return cfg
