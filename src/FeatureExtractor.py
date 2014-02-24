@@ -21,6 +21,7 @@ def line_signature_wrapper(fname, params):
         return
 
     if saturated_channel(im):
+        print "Image is saturated - skipping line check."
         return None
 
     return compute_line_signatures(im, params)
@@ -46,7 +47,10 @@ def compute_line_signatures(im, params):
     # transform.  hough_peaks takes the theta/rho form and
     # filters it for significant peaks corresponding to strong
     # line signals in the image. 
-    for _, angle, dist in zip(*hough_line_peaks(h, theta, d, threshold=0.8*np.max(h), min_angle=30, min_distance=20)):
+    for _, angle, dist in zip(*hough_line_peaks(h, theta, d, 
+                                                threshold=params["threshold_scale"]*np.max(h), 
+                                                min_angle=params["min_angle"], 
+                                                min_distance=params["min_distance"])):
         # compute coordinate set for pixels that lie along the line
         xs = np.arange(0, cols-1)
         ys = (dist - xs*np.cos(angle))/np.sin(angle)
