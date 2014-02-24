@@ -5,6 +5,7 @@ from scipy.interpolate import interp1d
 import numpy as np
 import scipy.ndimage as I
 import segmentation as seg
+import Utilities as U
 
 def line_signature_wrapper(fname, params):
     """Wrapper around the line signature computation that tries
@@ -52,8 +53,18 @@ def compute_line_signatures(im, params):
                                                 min_angle=params["min_angle"], 
                                                 min_distance=params["min_distance"])):
         # compute coordinate set for pixels that lie along the line
-        xs = np.arange(0, cols-1)
-        ys = (dist - xs*np.cos(angle))/np.sin(angle)
+        x1 = 0
+        x2 = cols
+        y1 = (dist - 0 * np.cos(angle)) / np.sin(angle)
+        y2 = (dist - cols * np.cos(angle)) / np.sin(angle)
+
+        # use bresenham's line drawing algorithm to make sure we don't
+        # get big gaps in lines that are very steep or flat.
+        (xs,ys) = U.bresenham(x1,y1,x2,y2)
+
+        ### OLD CODE FOR XS,YS BEFORE BRESENHAM USED
+        #        xs = np.arange(0, cols-1)
+        #        ys = (dist - xs*np.cos(angle))/np.sin(angle)
 
         # likely have points outside the bounds of the image, so mask
         # those out and ignore them
