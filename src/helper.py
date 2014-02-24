@@ -1,5 +1,5 @@
 #
-#
+# cherrypy-based web service for testing trail finder.
 #
 import urllib2, json, urllib
 import cherrypy
@@ -127,6 +127,12 @@ class Root(object):
 
     @cherrypy.expose
     def processImage(self, objid=None):
+        if objid==None:
+            return "<HTML><BODY>No ID provided.</BODY></HTML>"
+
+        # remove leading and trailing whitespace
+        objid = objid.strip()
+
         self.get_gz_image(objid)
         sdss_result = self.query_sdss(objid)
 
@@ -186,6 +192,9 @@ class Root(object):
         else:
             return "SIMBAD didn't return anything useful for this object.  ("+ty+")"
 
+##
+## start the service
+##
 if __name__ == '__main__':
     cherrypy.server.socket_host = '0.0.0.0'
     cherrypy.quickstart(Root())
