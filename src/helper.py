@@ -130,6 +130,9 @@ class Root(object):
         if objid==None:
             return "<HTML><BODY>No ID provided.</BODY></HTML>"
 
+        if len(objid)<1:
+            return "<HTML><BODY>No ID provided.</BODY></HTML>"
+
         # remove leading and trailing whitespace
         objid = objid.strip()
 
