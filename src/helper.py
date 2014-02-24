@@ -193,8 +193,10 @@ class Root(object):
             return "SIMBAD indicates that this object is a galaxy in a group of galaxies."
         elif ty=="GinCl":
             return "SIMBAD indicates that this is a galaxy in a cluster of galaxies."
+        elif len(ty) > 1:
+            return "SIMBAD returns a type that is not interpreted by this code yet.  ("+ty+")"
         else:
-            return "SIMBAD didn't return anything useful for this object.  ("+ty+")"
+            return "SIMBAD didn't return anything useful for this object."
 
 ##
 ## start the service
