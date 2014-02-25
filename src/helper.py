@@ -26,8 +26,12 @@ class Root(object):
         self.latest_image = None
         self.config = cfg.read_gztf_config("trailfinder.cfg")
 
-    def do_line_search(self, fname):
+    def do_line_search(self, fname, objid):
         retval = features.line_signature_wrapper(fname,self.config)
+        
+        # set latest lineout image to the "no lineouts" default, which
+        # will get overwritten if something is there.
+        self.latest_lineout_image = "/home/matt/gzhelper/images/nothing.jpg"
 
         if (retval == None):
             return (False,-1)
@@ -39,6 +43,10 @@ class Root(object):
             return (False,-1)
 
         objs = features.compute_sig_objects(rd,rh,rl)
+
+        fname = "/home/matt/gzhelper/images/lineouts_"+str(objid)+".jpg"
+        self.latest_lineout_image = fname
+        lines.show_lineout(fname, objs, 4, 4, self.config)
 
         for o in objs:
             (bool,which) = features.is_it_a_trail(o, self.config)
@@ -107,6 +115,14 @@ class Root(object):
         return '<HTML>'+genform()+'</HTML>'
 
     @cherrypy.expose
+    def showLatestLineoutImage(self):
+        cherrypy.response.headers['Content-Type'] = 'application/jpeg'
+        f = open(self.latest_lineout_image, 'r')
+        data = f.read()
+        f.close()
+        return data
+
+    @cherrypy.expose
     def showLatestLineImage(self):
         cherrypy.response.headers['Content-Type'] = 'application/jpeg'
         f = open(self.latest_lines_image, 'r')
@@ -135,13 +151,20 @@ class Root(object):
 
         self.refresh_sdss_db()
         if not(objid in self.sdss_db):
-            return "<HTML><BODY>ID does not match any in the GZ image set.</BODY></HTML>"
+            return "<HTML><BODY>ID not in the GZ image set.</BODY></HTML>"
 
+        # get the image
         self.get_gz_image(objid)
-        sdss_result = self.query_sdss(objid)
 
-        mystring = 'RA='+str(sdss_result['ra'])+'<BR>DEC='+str(sdss_result['dec'])
-        if (sdss_result['insideMask'] == 4):
+        # issue an SQL query to the SDSS database for more info
+        sdss_result = self.query_sdss(objid)
+        
+        obj_ra = sdss_result['ra']
+        obj_dec = sdss_result['dec']
+
+        mystring = 'RA='+str(obj_ra)+'<BR>DEC='+str(obj_dec)
+
+        if (sdss_result['insideMask'] & 0x04 == 4):
             mystring += '<P>This object resides within a TRAIL mask.  You probably are seeing a satellite that passed through the imaging field.'
         elif (sdss_result['insideMask'] > 0):
             mystring += '<P>This image is masked in the SDSS database, indicating the presence of artifacts or other features that render the image useless for analysis.'
@@ -150,7 +173,8 @@ class Root(object):
 
         debug_string = '<P>SDSS InsideMask Column = '+str(sdss_result['insideMask'])
 
-        (is_line, which) = self.do_line_search(self.latest_image)
+        # test if there is a line present that could be a trail.
+        (is_line, which) = self.do_line_search(self.latest_image, objid)
 
         if is_line:
             mystring += "<P>Hough filter detects a trail in the "
@@ -164,6 +188,7 @@ class Root(object):
             outfile = "/home/matt/gzhelper/images/lines_"+str(objid)+".jpg"
             self.latest_lines_image = outfile
             lines.lineplot_wrapper(self.latest_image, outfile, self.config)
+
             debug_string += '<P>Image w/ Hough results highlighted below.<P><IMG SRC="/showLatestLineImage"><P>'
         else:
             mystring += "<P>No trail detected via Hough method."
@@ -172,7 +197,9 @@ class Root(object):
             lines.lineplot_wrapper(self.latest_image, outfile, self.config)
             debug_string += '<P>Image w/ Hough results highlighted below.<P><IMG SRC="/showLatestLineImage"><P>'
 
-        simbad_type = self.query_simbad(sdss_result['ra'],sdss_result['dec'])
+        debug_string += '<P>RGB lineouts for up to 16 lines.<P><IMG SRC="/showLatestLineoutImage"><P>'
+
+        simbad_type = self.query_simbad(obj_ra, obj_dec)
 
         mystring += '<P>'+self.decode_simbad_type(simbad_type)
 

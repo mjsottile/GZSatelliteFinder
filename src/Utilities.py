@@ -43,7 +43,10 @@ def bresenham(x1,y1,x2,y2):
         else:
             y = y1 - np.cumsum(q)
 
-    return (x,y)
+    # hack to deal with rare case when one vector is one element longer
+    # than the other.  TODO: track down why this occurs.
+    retlen = min(len(x),len(y))
+    return (x[0:retlen],y[0:retlen])
 
 def kullback_leibler(p, q):
     """Kullback-Leibler divergence D(P || Q) for discrete distributions

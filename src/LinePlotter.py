@@ -25,6 +25,25 @@ def lineplot_wrapper(fname, outfile, params):
 
     show_with_lines(outfile, im, params)
 
+def show_lineout(fname, lines, nx, ny, params):
+    fig, axes = plt.subplots(nx,ny)
+
+    count = 0
+    for i in range(0,nx):
+        for j in range(0,ny):
+            ax = axes[i][j]
+            ax.plot(lines[count].r_data,'-r')
+            ax.plot(lines[count].g_data,'-g')
+            ax.plot(lines[count].b_data,'-b')
+            ax.axis((0, params["interp_length"], 0, 275))
+            count += 1
+            if (count >= len(lines)):
+                break
+        if (count >= len(lines)):
+            break
+
+    pylab.savefig(fname, format='jpg')
+
 def show_with_lines(fname, im, params):
     bin_img = seg.binarize(im)
     h, theta, d = hough_line(bin_img)

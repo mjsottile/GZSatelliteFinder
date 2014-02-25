@@ -54,7 +54,7 @@ def compute_line_signatures(im, params):
                                                 min_distance=params["min_distance"])):
         # compute coordinate set for pixels that lie along the line
         x1 = 0
-        x2 = cols
+        x2 = (cols-1)
         y1 = (dist - 0 * np.cos(angle)) / np.sin(angle)
         y2 = (dist - cols * np.cos(angle)) / np.sin(angle)
 
