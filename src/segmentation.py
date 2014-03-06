@@ -3,6 +3,10 @@
 import numpy as np
 import skimage.filter as F
 
+def binarize_denoised(img_array):
+    return binarize(F.denoise_tv_chambolle(img_array, multichannel=True,
+                                           n_iter_max=50))
+
 def binarize(img_array):
     """Given an RGB image, create a 2D binary image from it using Otsu's
        method in each color channel to adaptively compute thresholds."""
@@ -25,4 +29,5 @@ def binarize(img_array):
 
     img_bin_array = ((rchan > rthresh) + (gchan > gthresh) + 
                      (bchan > bthresh)) > 0.99
+
     return img_bin_array
